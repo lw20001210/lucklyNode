@@ -1,13 +1,18 @@
 const express = require("express");
 const db = require("../mysql/userSql");
-// 导入 bcryptjs 这个包
+// 导入 bcryptjs加密 这个包
 const bcrypt = require("bcryptjs");
+// 换md5加密算了，因为bcryptjs是单向加密的，无法解密
+const md5 = require("md5");
+const crypto = require("crypto");
+
 // 导入生成 Token 的包
 const jwt = require("jsonwebtoken");
 var multipart = require("connect-multiparty");
 let config = require("../config");
 // 2.创建路由对象
 const router = express.Router();
+// 注册接口
 router.post("/register", multipart(), (req, res) => {
   console.log(req.body);
   console.log(req.files);
@@ -19,7 +24,8 @@ router.post("/register", multipart(), (req, res) => {
   }
   let newObj = {
     ...req.body,
-    password: bcrypt.hashSync(req.body.password, 10),
+    // password: bcrypt.hashSync(req.body.password, 10),
+    password: md5(req.body.password),
     avatar: req.files.avatar.path,
   };
   const sqlStr = "insert into users set ?";
@@ -42,7 +48,6 @@ router.post("/register", multipart(), (req, res) => {
         msg: "注册成功",
         code: 200,
         data: data,
-        obj: { ...newObj, password: req.body.password },
       });
     }
   });
@@ -51,7 +56,7 @@ router.post("/register", multipart(), (req, res) => {
 router.post("/login", (req, res) => {
   const userinfo = req.body;
   const sql = `select * from users where username=?`;
-  console.log(req.body);
+  console.log(userinfo);
   db.query(sql, userinfo.username, function (err, results) {
     if (err)
       return res.send({
@@ -65,15 +70,26 @@ router.post("/login", (req, res) => {
       });
     // 拿着用户输入的密码,和数据库中存储的密码进行对比
     // 如果对比的结果等于 false, 则证明用户输入的密码错误
-    const compareResult = bcrypt.compareSync(
-      userinfo.password,
-      results[0].password
-    );
-    if (!compareResult)
+    // bcrypt判断
+    // const compareResult = bcrypt.compareSync(
+    //   userinfo.password,
+    //   results[0].password
+    // );
+    // console.log(results[0].password);
+    // if (!compareResult)
+    //   return res.send({
+    //     msg: "密码错误",
+    //   });
+    // md5判断
+    function md5Hash(text) {
+      const hash = crypto.createHash("md5");
+      hash.update(text);
+      return hash.digest("hex");
+    }
+    if (md5Hash(userinfo.password) != results[0].password)
       return res.send({
         msg: "密码错误",
       });
-
     // TODO：登录成功，生成 Token 字符串
     // // TODO_03：在登录成功之后，调用 jwt.sign() 方法生成 JWT 字符串。并通过 token 属性发送给客户端
     // //参数1：用户信息对象，参数2：加密的密匙，参数3：配置对象，可以配置当前token的有效期
