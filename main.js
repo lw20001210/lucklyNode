@@ -8,6 +8,9 @@ app.use(bodyParser.json());
 // 解析 url编码
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors());
+//开放资源
+//http://192.168.242.20:3000/static/333333.png
+app.use("/static", express.static("static")); //公开头像 http://localhost:8086/static/avatar/avatar-1648961256880.jpg
 const config = require("./config");
 const joi = require("@hapi/joi");
 const expressJWT = require("express-jwt"); //解析token的中间件

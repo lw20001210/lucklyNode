@@ -1,13 +1,16 @@
 const express = require("express");
 const db = require("../mysql/userSql");
+const fs = require("fs");
+const path = require("path");
 // 导入 bcryptjs加密 这个包
-const bcrypt = require("bcryptjs");
+// const bcrypt = require("bcryptjs");
 // 换md5加密算了，因为bcryptjs是单向加密的，无法解密
 const md5 = require("md5");
 const crypto = require("crypto");
 
 // 导入生成 Token 的包
 const jwt = require("jsonwebtoken");
+// 解决form-data参数问题
 var multipart = require("connect-multiparty");
 let config = require("../config");
 // 2.创建路由对象
@@ -15,18 +18,29 @@ const router = express.Router();
 // 注册接口
 router.post("/register", multipart(), (req, res) => {
   console.log(req.body);
-  console.log(req.files);
+  // 这是一个2进制文件对象
+  console.log(req.files.avatar);
   if (!req.files.avatar.path) {
     return res.send({
       msg: "注册失败",
       code: 500,
     });
   }
+  // 拿到头像的情况下
+  const fileContent = fs.readFileSync(req.files.avatar.path);
+  const extension = path.extname(req.files.avatar.originalFilename); // 获取上传文件的后缀名
+  const newFileName = `${req.body.username}${extension}`; // 根据账号和后缀名生成新的文件名
+  console.log(fileContent);
+  console.log(extension);
+  console.log(newFileName);
+  const uploadPath = path.join(__dirname, "../static", newFileName);
+  fs.writeFileSync(uploadPath, fileContent);
+  let img = `http://192.168.242.20:3000/static/${req.body.username}${extension}`;
   let newObj = {
     ...req.body,
     // password: bcrypt.hashSync(req.body.password, 10),
     password: md5(req.body.password),
-    avatar: req.files.avatar.path,
+    avatar: img,
   };
   const sqlStr = "insert into users set ?";
   db.query(sqlStr, newObj, (err, data) => {
@@ -98,9 +112,11 @@ router.post("/login", (req, res) => {
     });
     res.send({
       code: 200,
+      data: results[0],
       msg: "登录成功！",
       token: "Bearer " + tokenStr, // 要发送给客户端的 token 字符串
     });
   });
 });
+
 module.exports = router;
