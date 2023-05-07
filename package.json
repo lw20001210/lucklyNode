@@ -19,9 +19,16 @@
     "express": "^4.18.2",
     "express-jwt": "^5.3.3",
     "fs": "^0.0.1-security",
+    "ibm_db": "^3.1.0",
     "jsonwebtoken": "^8.5.1",
+    "mariadb": "^3.1.2",
     "md5": "^2.3.0",
-    "mysql": "^2.18.1"
+    "mysql": "^2.18.1",
+    "pg": "^8.10.0",
+    "pg-hstore": "^2.3.4",
+    "sequelize": "^6.31.1",
+    "sqlite3": "^5.1.6",
+    "tedious": "^16.0.0"
   },
   "repository": {
     "type": "git",

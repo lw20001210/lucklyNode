@@ -2,7 +2,6 @@ const express = require("express");
 const userRoute = require("./router/users");
 const bodyParser = require("body-parser");
 const app = express();
-
 const cors = require("cors");
 app.use(bodyParser.json());
 // 解析 url编码
