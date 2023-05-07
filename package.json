@@ -22,8 +22,7 @@
     "jsonwebtoken": "^8.5.1",
     "md5": "^2.3.0",
     "mysql": "^2.18.1",
-    "sequelize": "^6.31.1",
-    "tedious": "^16.0.0"
+    "sequelize": "^6.31.1"
   },
   "repository": {
     "type": "git",
