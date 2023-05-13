@@ -3,6 +3,7 @@ const express = require("express");
 const UsersModel = require("../models/usersModel.js");
 const fs = require("fs");
 const path = require("path");
+const { mainUrl } = require("../config");
 // 导入 bcryptjs加密 这个包
 // const bcrypt = require("bcryptjs");
 // 换md5加密算了，因为bcryptjs是单向加密的，无法解密
@@ -29,19 +30,24 @@ router.post("/register", multipart(), async (req, res) => {
     birthday,
     signature,
   } = req.body;
+  let imgObj = req.files.avatar.path;
+  if (!imgObj)
+    return res.send({
+      code: 500,
+      msg: "未上传成功头像",
+    });
   // 拿到头像的情况下
-  const fileContent = fs.readFileSync(req.files.avatar.path);
+  const fileContent = fs.readFileSync(imgObj);
   const extension = path.extname(req.files.avatar.originalFilename); // 获取上传文件的后缀名
   const newFileName = `${req.body.username}${extension}`; // 根据账号和后缀名生成新的文件名
   const uploadPath = path.join(__dirname, "../static", newFileName);
-  fs.writeFileSync(uploadPath, fileContent);
-  let img = `http://192.168.242.20:3000/static/${req.body.username}${extension}`;
+  fs.writeFileSync(uploadPath, fileContent); //把文件放入到我们想要的文件夹下
+  let img = `${mainUrl}/static/${req.body.username}${extension}`; //main.js里面把这个文件夹资源开放了，方便以往前端以网络图片形式访问
   let newObj = {
     ...req.body,
-    password: md5(password),
+    password: password,
     avatar: img,
   };
-  // const sqlStr = "insert into users set ?";
   let userRes = await UsersModel.findOne({
     where: {
       username: username,
@@ -95,7 +101,7 @@ router.post("/login", async (req, res) => {
       username: userinfo.username,
     },
   });
-  // 如果没有查到
+  // 如果没有查到该用户
   if (!userRes)
     return res.send({
       code: 500,
@@ -103,13 +109,9 @@ router.post("/login", async (req, res) => {
     });
   // 拿着用户输入的密码,和数据库中存储的密码进行对比
   // 如果对比的结果等于 false, 则证明用户输入的密码错误
-  function md5Hash(text) {
-    const hash = crypto.createHash("md5");
-    hash.update(text);
-    return hash.digest("hex");
-  }
-  if (md5Hash(userinfo.password) != userRes.password)
+  if (userinfo.password != userRes.password)
     return res.send({
+      code: 500,
       msg: "密码错误",
     });
   // TODO：登录成功，生成 Token 字符串
@@ -125,5 +127,21 @@ router.post("/login", async (req, res) => {
     token: "Bearer " + tokenStr, // 要发送给客户端的 token 字符串
   });
 });
-
+// 注销账号
+router.delete("/delete", (req, res) => {
+  console.log("删除接口", req.body);
+  UsersModel.destroy({
+    where: { username: req.body.username },
+  })
+    .then(() => {
+      console.log("删除用户成功");
+      res.send({
+        code: 200,
+        msg: "账号注销成功",
+      });
+    })
+    .catch((error) => {
+      console.log(error, "注销账号失败");
+    });
+});
 module.exports = router;

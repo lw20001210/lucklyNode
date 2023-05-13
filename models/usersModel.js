@@ -57,7 +57,7 @@ const UsersModel = sequelize.define(
       defaultValue: "",
     },
   },
-  { timestamps: false }
+  { timestamps: false } //这个它会自动生成两个时间字段，我不需要·，所以弄掉了
 );
 
 module.exports = UsersModel;

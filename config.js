@@ -5,4 +5,5 @@ module.exports = {
   Keys: "lw",
   // token 的有效期
   times: "10h",
+  mainUrl: "http://192.168.242.20:3000",
 };
