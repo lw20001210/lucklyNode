@@ -25,7 +25,11 @@ app.use(
 
 // 定义错误中间件
 app.use((err, req, res, next) => {
-  if (err.name === "UnauthorizedError") return res.send("身份验证失败。");
+  if (err.name === "UnauthorizedError")
+    return res.send({
+      code: 500,
+      msg: "身份验证失败。",
+    });
   res.send("服务器发生错误。");
 });
 

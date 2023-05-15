@@ -144,4 +144,45 @@ router.delete("/delete", (req, res) => {
       console.log(error, "注销账号失败");
     });
 });
+// 更新用户信息
+router.post("/update", multipart(), async (req, res) => {
+  // 1判断是是否有该用户
+  let userRes = await UsersModel.findOne({
+    where: {
+      username: req.body.username,
+    },
+  });
+  if (!userRes) return res.send("数据库无该用户");
+  // 2判断是否能拿到头像
+  let imgObj = req.files.avatar.path;
+  const fileContent = fs.readFileSync(imgObj);
+  const extension = path.extname(req.files.avatar.originalFilename); // 获取上传文件的后缀名
+  const newFileName = `${req.body.username}${extension}`; // 根据账号和后缀名生成新的文件名
+  const uploadPath = path.join(__dirname, "../static", newFileName);
+  fs.writeFileSync(uploadPath, fileContent); //把文件放入到我们想要的文件夹下
+  let img = `${mainUrl}/static/${req.body.username}${extension}`; //main.js里面把这个文件夹资源开放了，方便以往前端以网络图片形式访问
+  console.log(userRes.dataValues);
+
+  UsersModel.update(
+    { avatar: img },
+    {
+      where: { username: req.body.username },
+    }
+  )
+    .then(() => {
+      console.log("更新用户成功");
+      res.send({
+        code: 200,
+        msg: "更新成功",
+        data: img,
+      });
+    })
+    .catch((error) => {
+      console.error("更新用户失败", error);
+      res.send({
+        code: 500,
+        msg: "更新失败",
+      });
+    });
+});
 module.exports = router;
