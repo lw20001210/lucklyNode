@@ -29,6 +29,7 @@ router.post("/register", multipart(), async (req, res) => {
     email,
     birthday,
     signature,
+    statu,
   } = req.body;
   let imgObj = req.files.avatar.path;
   if (!imgObj)
@@ -37,12 +38,13 @@ router.post("/register", multipart(), async (req, res) => {
       msg: "未上传成功头像",
     });
   // 拿到头像的情况下
+  let times = Date.now();
   const fileContent = fs.readFileSync(imgObj);
   const extension = path.extname(req.files.avatar.originalFilename); // 获取上传文件的后缀名
-  const newFileName = `${req.body.username}${extension}`; // 根据账号和后缀名生成新的文件名
+  const newFileName = `${times}${extension}`; // 根据账号和后缀名生成新的文件名
   const uploadPath = path.join(__dirname, "../static", newFileName);
   fs.writeFileSync(uploadPath, fileContent); //把文件放入到我们想要的文件夹下
-  let img = `${mainUrl}/static/${req.body.username}${extension}`; //main.js里面把这个文件夹资源开放了，方便以往前端以网络图片形式访问
+  let img = `${mainUrl}/static/${times}${extension}`; //main.js里面把这个文件夹资源开放了，方便以往前端以网络图片形式访问
   let newObj = {
     ...req.body,
     password: password,
@@ -74,6 +76,7 @@ router.post("/register", multipart(), async (req, res) => {
     sex,
     phone,
     email,
+    statu,
     createTime,
     birthday,
     signature,
@@ -122,9 +125,31 @@ router.post("/login", async (req, res) => {
   });
   res.send({
     code: 200,
-    data: userRes.dataValues,
+    data: userinfo.username,
     msg: "登录成功！",
     token: "Bearer " + tokenStr, // 要发送给客户端的 token 字符串
+  });
+});
+// 获取用户信息
+router.get("/userInfo", async (req, res) => {
+  const userinfo = req.query;
+  // 通过用户名查询用户
+  let userRes = await UsersModel.findOne({
+    where: {
+      username: userinfo.username,
+    },
+  });
+  // 如果没有查到该用户
+  if (!userRes)
+    return res.send({
+      code: 500,
+      msg: "该账号未被注册",
+    });
+  // console.log(userRes.dataValues);
+  res.send({
+    msg: "获取用户信息成功",
+    code: 200,
+    data: userRes.dataValues,
   });
 });
 // 注销账号
@@ -153,28 +178,39 @@ router.post("/update", multipart(), async (req, res) => {
     },
   });
   if (!userRes) return res.send("数据库无该用户");
+  let newObj = {};
   // 2判断是否能拿到头像
-  let imgObj = req.files.avatar.path;
-  const fileContent = fs.readFileSync(imgObj);
-  const extension = path.extname(req.files.avatar.originalFilename); // 获取上传文件的后缀名
-  const newFileName = `${req.body.username}${extension}`; // 根据账号和后缀名生成新的文件名
-  const uploadPath = path.join(__dirname, "../static", newFileName);
-  fs.writeFileSync(uploadPath, fileContent); //把文件放入到我们想要的文件夹下
-  let img = `${mainUrl}/static/${req.body.username}${extension}`; //main.js里面把这个文件夹资源开放了，方便以往前端以网络图片形式访问
-  console.log(userRes.dataValues);
+  let img = "";
+  let times = Date.now();
+  // let imgObj = req.files.avatar.path;
+  if (req.files?.avatar?.path) {
+    const fileContent = fs.readFileSync(req.files.avatar.path);
+    const extension = path.extname(req.files.avatar.originalFilename); // 获取上传文件的后缀名
+    const newFileName = `${times}${extension}`; // 根据账号和后缀名生成新的文件名
+    const uploadPath = path.join(__dirname, "../static", newFileName);
+    fs.writeFileSync(uploadPath, fileContent); //把文件放入到我们想要的文件夹下
+    img = `${mainUrl}/static/${times}${extension}`; //main.js里面把这个文件夹资源开放了，方便以往前端以网络图片形式访问
+    console.log(userRes.dataValues);
+    newObj = { ...userRes.dataValues, ...req.body, avatar: img };
+  } else {
+    newObj = { ...userRes.dataValues, ...req.body };
+  }
 
-  UsersModel.update(
-    { avatar: img },
-    {
-      where: { username: req.body.username },
-    }
-  )
-    .then(() => {
+  UsersModel.update(newObj, {
+    where: { username: req.body.username },
+  })
+    .then(async () => {
       console.log("更新用户成功");
+      let userRes = await UsersModel.findOne({
+        where: {
+          username: req.body.username,
+        },
+      });
+      console.log(userRes.dataValues);
       res.send({
         code: 200,
         msg: "更新成功",
-        data: img,
+        data: userRes.dataValues,
       });
     })
     .catch((error) => {

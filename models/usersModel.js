@@ -44,7 +44,7 @@ const UsersModel = sequelize.define(
       type: Sequelize.STRING(100),
       defaultValue: "2021-12-31 23:59:59",
     },
-    status: {
+    statu: {
       type: Sequelize.TINYINT,
       defaultValue: 0,
     },
