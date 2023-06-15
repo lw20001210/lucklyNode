@@ -1,21 +1,24 @@
 const express = require("express");
+// 引入 cookie-parser 中间件
 const userRoute = require("./router/users");
+const mySpaceRoute = require("./router/mySpace");
 const bodyParser = require("body-parser");
 const app = express();
 const cors = require("cors"); //跨域
 const config = require("./config");
 const expressJWT = require("express-jwt"); //一定要在路由之前配置
 const { mainUrl } = require("./config");
+app.use(cors());
 // 导入 Sequelize连接数据库 和模型定义
 const sequelize = require("./mysql/sequlize");
 const UserModel = require("./models/usersModel.js");
+const mySpace = require("./models/mySpace");
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(cors());
 
 // 静态资源,方便我们前端以往网络图片形式访问
-app.use("/static", express.static("static"));
-
+app.use("/static/avatar", express.static("static/avatar"));
+app.use("/static/mySpace", express.static("static/mySpace"));
 // 定义 token 的解析中间件，并排除 user/register和user/login 相关路由
 app.use(
   expressJWT({ secret: config.Keys }).unless({
@@ -27,15 +30,19 @@ app.use(
 app.use((err, req, res, next) => {
   if (err.name === "UnauthorizedError")
     return res.send({
-      code: 500,
-      msg: "身份验证失败。",
+      code: 401,
+      msg: "token已失效",
     });
   res.send("服务器发生错误。");
 });
-
+// 设置 SameSite 属性
+// app.use((req, res, next) => {
+//   res.set("SameSite", "Lax");
+//   next();
+// });
 // 挂载路由
 app.use("/user", userRoute);
-
+app.use("/user", mySpaceRoute);
 // 连接数据库并同步数据表
 sequelize
   .authenticate()
@@ -46,7 +53,7 @@ sequelize
   .then(() => {
     console.log("数据表同步成功。");
     app.listen(3000, () => {
-      console.log(`应用程序已启动，访问地址: ${mainUrl}/user`);
+      console.log(`应用程序已启动，访问地址: ${mainUrl}`);
     });
   })
   .catch((error) => {

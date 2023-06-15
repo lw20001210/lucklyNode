@@ -7,13 +7,13 @@ const UsersModel = sequelize.define(
     id: {
       type: Sequelize.INTEGER,
       allowNull: false,
-      primaryKey: true,
-      autoIncrement: true,
+      primaryKey: true, //主键
+      autoIncrement: true, //自动递增
     },
     username: {
       type: Sequelize.STRING(50),
       allowNull: false,
-      unique: true,
+      unique: true, //唯一性
     },
     password: {
       type: Sequelize.STRING(100),
@@ -42,11 +42,11 @@ const UsersModel = sequelize.define(
     },
     birthday: {
       type: Sequelize.STRING(100),
-      defaultValue: "2021-12-31 23:59:59",
+      defaultValue: "",
     },
     statu: {
       type: Sequelize.TINYINT,
-      defaultValue: 0,
+      defaultValue: 0, //默认0为女，1为男
     },
     createTime: {
       type: Sequelize.STRING(100),

@@ -1,9 +1,11 @@
 const express = require("express");
+const moment = require("moment");
 // const db = require("../mysql/userSql");
 const UsersModel = require("../models/usersModel.js");
 const fs = require("fs");
 const path = require("path");
 const { mainUrl } = require("../config");
+const QRCode = require("qrcode"); //生成二维码
 // 导入 bcryptjs加密 这个包
 // const bcrypt = require("bcryptjs");
 // 换md5加密算了，因为bcryptjs是单向加密的，无法解密
@@ -31,7 +33,9 @@ router.post("/register", multipart(), async (req, res) => {
     signature,
     statu,
   } = req.body;
+  console.log(req.files);
   let imgObj = req.files.avatar.path;
+  console.log(imgObj);
   if (!imgObj)
     return res.send({
       code: 500,
@@ -42,13 +46,14 @@ router.post("/register", multipart(), async (req, res) => {
   const fileContent = fs.readFileSync(imgObj);
   const extension = path.extname(req.files.avatar.originalFilename); // 获取上传文件的后缀名
   const newFileName = `${times}${extension}`; // 根据账号和后缀名生成新的文件名
-  const uploadPath = path.join(__dirname, "../static", newFileName);
+  const uploadPath = path.join(__dirname, "../static/avatar", newFileName);
   fs.writeFileSync(uploadPath, fileContent); //把文件放入到我们想要的文件夹下
-  let img = `${mainUrl}/static/${times}${extension}`; //main.js里面把这个文件夹资源开放了，方便以往前端以网络图片形式访问
+  let img = `${mainUrl}/static/avatar/${times}${extension}`; //main.js里面把这个文件夹资源开放了，方便以往前端以网络图片形式访问
   let newObj = {
     ...req.body,
     password: password,
     avatar: img,
+    createTime: moment(Date.now()).format("YYYY/MM/DD HH:mm"),
   };
   let userRes = await UsersModel.findOne({
     where: {
@@ -184,12 +189,13 @@ router.post("/update", multipart(), async (req, res) => {
   let times = Date.now();
   // let imgObj = req.files.avatar.path;
   if (req.files?.avatar?.path) {
+    console.log(req.files.avatar.path);
     const fileContent = fs.readFileSync(req.files.avatar.path);
     const extension = path.extname(req.files.avatar.originalFilename); // 获取上传文件的后缀名
     const newFileName = `${times}${extension}`; // 根据账号和后缀名生成新的文件名
-    const uploadPath = path.join(__dirname, "../static", newFileName);
+    const uploadPath = path.join(__dirname, "../static/avatar", newFileName);
     fs.writeFileSync(uploadPath, fileContent); //把文件放入到我们想要的文件夹下
-    img = `${mainUrl}/static/${times}${extension}`; //main.js里面把这个文件夹资源开放了，方便以往前端以网络图片形式访问
+    img = `${mainUrl}/static/avatar/${times}${extension}`; //main.js里面把这个文件夹资源开放了，方便以往前端以网络图片形式访问
     console.log(userRes.dataValues);
     newObj = { ...userRes.dataValues, ...req.body, avatar: img };
   } else {
@@ -220,5 +226,30 @@ router.post("/update", multipart(), async (req, res) => {
         msg: "更新失败",
       });
     });
+});
+// 生成2维码
+router.post("/createQrcode", async (req, res) => {
+  let { id } = req.body;
+  if (id) {
+    // 这里一定要传字符串，不然会报错
+    let url = await QRCode.toDataURL(id.toString());
+    if (url) {
+      res.send({
+        msg: "获取成功",
+        data: url,
+        code: 200,
+      });
+    } else {
+      res.send({
+        msg: "获取失败",
+        code: 304,
+      });
+    }
+  } else {
+    res.send({
+      msg: "获取失败",
+      code: 304,
+    });
+  }
 });
 module.exports = router;
