@@ -69,8 +69,9 @@ router.get("/getMySpaceInfo", async (req, res) => {
     data: newSpaceInfo,
   });
 });
+// 删除动态
 router.delete("/deleteSpace", async (req, res) => {
-  console.log(req.body);
+  // console.log(req.body);
   mySpaceModel
     .destroy({
       where: { id: req.body.id },
@@ -86,4 +87,5 @@ router.delete("/deleteSpace", async (req, res) => {
       console.log(error, "删除动态失败");
     });
 });
+
 module.exports = router;

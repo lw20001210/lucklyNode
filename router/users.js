@@ -31,7 +31,7 @@ router.post("/register", multipart(), async (req, res) => {
     email,
     birthday,
     signature,
-    statu,
+    status,
   } = req.body;
   console.log(req.files);
   let imgObj = req.files.avatar.path;
@@ -81,7 +81,7 @@ router.post("/register", multipart(), async (req, res) => {
     sex,
     phone,
     email,
-    statu,
+    status,
     createTime,
     birthday,
     signature,

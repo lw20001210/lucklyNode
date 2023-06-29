@@ -2,6 +2,7 @@ const express = require("express");
 // 引入 cookie-parser 中间件
 const userRoute = require("./router/users");
 const mySpaceRoute = require("./router/mySpace");
+const editSpaceRoute = require("./router/editSpace");
 const bodyParser = require("body-parser");
 const app = express();
 const cors = require("cors"); //跨域
@@ -13,6 +14,7 @@ app.use(cors());
 const sequelize = require("./mysql/sequlize");
 const UserModel = require("./models/usersModel.js");
 const mySpace = require("./models/mySpace");
+const { likeFormModel, commentFormModel } = require("./models/editSpace");
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -35,14 +37,10 @@ app.use((err, req, res, next) => {
     });
   res.send("服务器发生错误。");
 });
-// 设置 SameSite 属性
-// app.use((req, res, next) => {
-//   res.set("SameSite", "Lax");
-//   next();
-// });
 // 挂载路由
 app.use("/user", userRoute);
 app.use("/user", mySpaceRoute);
+app.use("/user", editSpaceRoute);
 // 连接数据库并同步数据表
 sequelize
   .authenticate()

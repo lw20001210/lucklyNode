@@ -44,7 +44,7 @@ const UsersModel = sequelize.define(
       type: Sequelize.STRING(100),
       defaultValue: "",
     },
-    statu: {
+    status: {
       type: Sequelize.TINYINT,
       defaultValue: 0, //默认0为女，1为男
     },
