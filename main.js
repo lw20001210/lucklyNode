@@ -3,6 +3,7 @@ const express = require("express");
 const userRoute = require("./router/users");
 const mySpaceRoute = require("./router/mySpace");
 const editSpaceRoute = require("./router/editSpace");
+const friendRoute=require("./router/friendShip")
 const bodyParser = require("body-parser");
 const app = express();
 const cors = require("cors"); //跨域
@@ -15,6 +16,7 @@ const sequelize = require("./mysql/sequlize");
 const UserModel = require("./models/usersModel.js");
 const mySpace = require("./models/mySpace");
 const { likeFormModel, commentFormModel } = require("./models/editSpace");
+const {applyListModel,remarkFormModel}=require("./models/friendShip.js")
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -41,6 +43,7 @@ app.use((err, req, res, next) => {
 app.use("/user", userRoute);
 app.use("/user", mySpaceRoute);
 app.use("/user", editSpaceRoute);
+app.use("/user",friendRoute);
 // 连接数据库并同步数据表
 sequelize
   .authenticate()

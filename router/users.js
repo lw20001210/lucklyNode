@@ -43,8 +43,8 @@ router.post("/register", multipart(), async (req, res) => {
     });
   // 拿到头像的情况下
   let times = Date.now();
-  const fileContent = fs.readFileSync(imgObj);
   const extension = path.extname(req.files.avatar.originalFilename); // 获取上传文件的后缀名
+  const fileContent = fs.readFileSync(req.files.avatar.path);
   const newFileName = `${times}${extension}`; // 根据账号和后缀名生成新的文件名
   const uploadPath = path.join(__dirname, "../static/avatar", newFileName);
   fs.writeFileSync(uploadPath, fileContent); //把文件放入到我们想要的文件夹下
@@ -229,10 +229,10 @@ router.post("/update", multipart(), async (req, res) => {
 });
 // 生成2维码
 router.post("/createQrcode", async (req, res) => {
-  let { id } = req.body;
-  if (id) {
+  let { username } = req.body;
+  if (username) {
     // 这里一定要传字符串，不然会报错
-    let url = await QRCode.toDataURL(id.toString());
+    let url = await QRCode.toDataURL(username.toString());
     if (url) {
       res.send({
         msg: "获取成功",
@@ -252,4 +252,11 @@ router.post("/createQrcode", async (req, res) => {
     });
   }
 });
+router.get('/searchAllUser', async (req, res) => {
+  let allUser = await UsersModel.findAll()
+  return res.send({
+    code: 200,
+    data: allUser
+  })
+})
 module.exports = router;
