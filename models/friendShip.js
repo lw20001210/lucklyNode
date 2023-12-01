@@ -4,7 +4,8 @@ const sequelize = require("../mysql/sequlize");
 // 申请表
 const applyListModel = sequelize.define("applyList", {
     status: {
-        type: DataTypes.BOOLEAN, defaultValue: false
+        type: DataTypes.INTEGER, defaultValue: 0
+        // 0代表显示操作项,1代表同意,-1代表已拒绝
     },
     sendId: {
         type: Sequelize.INTEGER,
@@ -46,10 +47,24 @@ const remarkFormModel = sequelize.define(
         },
         nickName: {
             type: Sequelize.STRING(100),
-            allowNull: false
         }
     },
     { timestamps: false } //这个它会自动生成两个时间字段，我不需要·，所以弄掉了
   );
+//   好友关系表
+  const friendShipModel = sequelize.define("friendShip", {
+    myId: {
+        type: Sequelize.INTEGER,
+    },
+    friendId: {
+        type: Sequelize.INTEGER,
+    },
+    createTime: {
+        type: Sequelize.STRING(100),
+        defaultValue: Date.now(),
+    },
+},
+    { timestamps: false } //这个它会自动生成两个时间字段，我不需要·，所以弄掉了
+);
 //两种定义方式都可以
-module.exports = {remarkFormModel,applyListModel};
+module.exports = {remarkFormModel,applyListModel,friendShipModel};

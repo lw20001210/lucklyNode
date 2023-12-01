@@ -54,7 +54,7 @@ const UsersModel = sequelize.define(
     },
     signature: {
       type: Sequelize.STRING(100),
-      defaultValue: "",
+      defaultValue: "别让自己在该奋斗的年纪选择安逸",
     },
   },
   { timestamps: false } //这个它会自动生成两个时间字段，我不需要·，所以弄掉了

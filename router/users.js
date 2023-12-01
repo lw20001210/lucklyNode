@@ -161,7 +161,7 @@ router.get("/userInfo", async (req, res) => {
 router.delete("/delete", (req, res) => {
   console.log("删除接口", req.body);
   UsersModel.destroy({
-    where: { username: req.body.username },
+    where: { id: req.body.id },
   })
     .then(() => {
       console.log("删除用户成功");

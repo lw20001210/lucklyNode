@@ -16,7 +16,7 @@ const sequelize = require("./mysql/sequlize");
 const UserModel = require("./models/usersModel.js");
 const mySpace = require("./models/mySpace");
 const { likeFormModel, commentFormModel } = require("./models/editSpace");
-const {applyListModel,remarkFormModel}=require("./models/friendShip.js")
+const {applyListModel,remarkFormModel,friendShipModel}=require("./models/friendShip.js")
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -29,7 +29,7 @@ app.use(
     path: [/^\/user\/register/, /^\/user\/login/],
   })
 );
-// 测试git上传仓库
+// 测试git上传仓库 这个就是别名 githubLucklyNode
 
 // 定义错误中间件
 app.use((err, req, res, next) => {
