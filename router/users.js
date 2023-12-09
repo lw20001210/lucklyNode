@@ -259,4 +259,5 @@ router.get('/searchAllUser', async (req, res) => {
     data: allUser
   })
 })
+
 module.exports = router;

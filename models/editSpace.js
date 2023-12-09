@@ -3,6 +3,12 @@ const sequelize = require("../mysql/sequlize");
 const likeFormModel = sequelize.define(
   "likeForm",
   {
+    id: {
+      type: Sequelize.INTEGER,
+      allowNull: false,
+      primaryKey: true, //主键
+      autoIncrement: true, //自动递增
+  },
     likeId: {
       type: Sequelize.INTEGER, //点赞文章id
       defaultValue: 0, //0为未点赞
@@ -25,6 +31,12 @@ const likeFormModel = sequelize.define(
 const commentFormModel = sequelize.define(
   "commentForm",
   {
+    id: {
+      type: Sequelize.INTEGER,
+      allowNull: false,
+      primaryKey: true, //主键
+      autoIncrement: true, //自动递增
+  },
     commentId: {
       type: Sequelize.INTEGER, //评论文章id
     },

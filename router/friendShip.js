@@ -1,5 +1,5 @@
 const express = require("express");
-const { applyListModel, remarkFormModel, friendShipModel } = require("../models/friendShip");
+const { applyListModel, friendShipModel } = require("../models/friendShip");
 const UsersModel = require("../models/usersModel.js");
 // 2.创建路由对象
 const router = express.Router();
@@ -64,34 +64,28 @@ router.get('/getApplyList', async (req, res) => {
         data: data
     })
 })
-// 添加备注
-router.post("/addRemark", async (req, res) => {
-    let data = await remarkFormModel.findOne({
+// 获取申请表暂未处理人数
+router.get("/getFriendNum", async (req, res) => {
+    let data = await applyListModel.findAll({
         where: {
-            myId: req.body.myId,
-            friendId: req.body.friendId
+            acceptId: req.query.id,
+            status: 0
         }
-    })
-    if (data != null) {
-        await remarkFormModel.update({
-            nickName: req.body.Nickname
-        }, {
-            where: {
-                myId: req.body.myId,
-                friendId: req.body.friendId
-            }
-        })
-    } else {
-        await remarkFormModel.create(req.body)
-    }
+    });
     return res.send({
         code: 200,
-        data: req.body
+        data: data
     })
 })
 // 创建好友关系并更新申请列表单个申请状态
 router.post("/createShip", async (req, res) => {
-    // console.log(req.body, 111);
+    let data = await applyListModel.findOne({
+        where: {
+            sendId: req.body.friendId,
+            acceptId: req.body.myId
+        }
+    })
+    req.body.nameD = data?.dataValues?.nickname;
     await friendShipModel.create(req.body);
     applyListModel.update({ status: 1 }, {
         where: {
@@ -103,6 +97,7 @@ router.post("/createShip", async (req, res) => {
         code: 200,
     })
 })
+// 拒绝好友申请
 router.put("/rejectApply", async (req, res) => {
     applyListModel.update({ status: -1 }, {
         where: {
@@ -114,15 +109,14 @@ router.put("/rejectApply", async (req, res) => {
         code: 200,
     })
 })
+// 删除好友申请记录
 router.delete("/deleteApplyRecord", async (req, res) => {
-    console.log(req.body);
     let result = await applyListModel.destroy({
         where: {
             sendId: req.body.sendId,
             acceptId: req.body.acceptId
         }
     })
-    console.log(result, 11111);
     return res.send({
         code: 200,
         data: result
@@ -131,41 +125,131 @@ router.delete("/deleteApplyRecord", async (req, res) => {
 // 获取好友列表
 router.get("/getFriendList", async (req, res) => {
     let friendList = [];
-   let data= await friendShipModel.findAll({
+    let data = await friendShipModel.findAll({
         where: {
             myId: req.query.id
         }
     })
-    let userList=await UsersModel.findAll();
+    let userList = await UsersModel.findAll();
     data.forEach(item => {
         userList.forEach(ele => {
             if (item.dataValues.friendId == ele.dataValues.id) {
+                ele.dataValues.remarked = item.dataValues.friendName
                 friendList.push(ele)
             }
         })
     })
-    let remarkList= await remarkFormModel.findAll({
+    let result = await friendShipModel.findAll({
         where: {
-            myId: req.query.id
+            friendId: req.query.id
         }
     })
-    friendList.forEach(item=>{
-        remarkList.forEach(ele=>{
-            if(ele.dataValues.friendId==item.dataValues.id){
-                item.dataValues["remarked"]=ele.dataValues.nickName
+    result.forEach(item => {
+        userList.forEach(ele => {
+            if (item.dataValues.myId == ele.dataValues.id) {
+                ele.dataValues.remarked = item.dataValues.nameD
+                friendList.push(ele)
             }
         })
     })
-    let userInfo=await UsersModel.findOne({
-        where:{
-            id:req.query.id
+    let userInfo = await UsersModel.findOne({
+        where: {
+            id: req.query.id
         }
     })
     friendList.unshift(userInfo)
-    console.log(friendList,111);
     return res.send({
         code: 200,
         data: friendList
+    })
+})
+router.get("/getFriendInfo", async (req, res) => {
+    //console.log(req.query);
+    let userInfo = await UsersModel.findOne({
+        where: {
+            id: req.query.friendId
+        }
+    })
+    //  console.log(userInfo,222);
+    let friend = await friendShipModel.findOne({
+        where: {
+            myId: req.query.myId,
+            friendId: req.query.friendId
+        }
+    })
+    if (friend != null) {
+        userInfo.dataValues.remarked = friend.dataValues.friendName;
+    } else {
+        let reFriend = await friendShipModel.findOne({
+            where: {
+                myId: req.query.friendId,
+                friendId: req.query.myId
+            }
+        })
+        // console.log(reFriend,99);
+        userInfo.dataValues.remarked = reFriend.dataValues.nameD
+    }
+    //  console.log(friend,66);
+    return res.send({
+        code: 200,
+        data: userInfo
+    })
+})
+router.put("/updateFriendName", async (req, res) => {
+    // console.log(req.body);
+
+    //  console.log(userInfo,222);
+    let friend = await friendShipModel.findOne({
+        where: {
+            myId: req.body.myId,
+            friendId: req.body.friendId
+        }
+    })
+    if (friend != null) {
+        await friendShipModel.update({ friendName: req.body.remark }, {
+            where: {
+                id: friend.dataValues.id
+            }
+        });
+    } else {
+        let reFriend = await friendShipModel.findOne({
+            where: {
+                myId: req.body.friendId,
+                friendId: req.body.myId
+            }
+        })
+        console.log(reFriend, 99);
+        await friendShipModel.update({ nameD: req.body.remark }, {
+            where: {
+                id: reFriend.dataValues.id
+            }
+        });
+    }
+    return res.send({
+        code: 200,
+        msg: "更新成功"
+    })
+})
+router.delete("/removeFriend", async (req, res) => {
+   let data= await friendShipModel.destroy({
+        where: {
+            myId: req.body.myId,
+            friendId: req.body.friendId
+        }
+      });
+      console.log(data,11);
+      if(data==0){
+        let result= await friendShipModel.destroy({
+            where: {
+                myId: req.body.friendId,
+                friendId: req.body.myId
+            }
+          });
+          console.log(result,22);
+      }
+    return res.send({
+        code: 200,
+        msg: "删除好友成功"
     })
 })
 module.exports = router

@@ -44,10 +44,6 @@ const UsersModel = sequelize.define(
       type: Sequelize.STRING(100),
       defaultValue: "",
     },
-    status: {
-      type: Sequelize.TINYINT,
-      defaultValue: 0, //默认0为女，1为男
-    },
     createTime: {
       type: Sequelize.STRING(100),
       defaultValue: Date.now(),

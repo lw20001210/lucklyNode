@@ -16,7 +16,7 @@ const sequelize = require("./mysql/sequlize");
 const UserModel = require("./models/usersModel.js");
 const mySpace = require("./models/mySpace");
 const { likeFormModel, commentFormModel } = require("./models/editSpace");
-const {applyListModel,remarkFormModel,friendShipModel}=require("./models/friendShip.js")
+const {applyListModel,friendShipModel}=require("./models/friendShip.js")
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
