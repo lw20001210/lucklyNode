@@ -205,7 +205,7 @@ router.get("/getFriendDynamicList", async (req, res) => {
           });
 
           if (result != null) {
-            item.dataValues.remarked = result?.dataValues?.friendName;
+            item.dataValues.remarked = result.dataValues.friendName;
             // 给予回复评论备注名
             for (const val of replys) {
               val.dataValues.replyName = '';
@@ -249,9 +249,10 @@ router.get("/getFriendDynamicList", async (req, res) => {
             userList.forEach(userItem => {
               if (userItem.dataValues.id == req.query.id) {
                 item.dataValues.remarked = userItem.dataValues.nickname;
+                ele.dataValues.comments.push(item);
               }
             })
-            ele.dataValues.comments.push(item);
+            // ele.dataValues.comments.push(item);
           }
         }
       }
