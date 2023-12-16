@@ -27,7 +27,8 @@
     "mysql2": "^3.3.0",
     "node-fetch": "^2.6.5",
     "qrcode": "^1.5.3",
-    "sequelize": "^6.31.1"
+    "sequelize": "^6.31.1",
+    "socket.io": "^4.7.2"
   },
   "repository": {
     "type": "git",
