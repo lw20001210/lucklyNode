@@ -11,22 +11,32 @@ const { mainUrl } = require("../config");
 const { likeFormModel, commentFormModel, replyFormModel } = require("../models/editSpace");
 router.post("/sedSpace", multipart(), async (req, res) => {
   let arrImg = [];
+  // console.log(req.files.file,333);
+  // console.log(req.files.file?.type, 9999);
+  // console.log(req.files.file?.type == 'text/html', 9999);
   if (req.files) {
     for (let i in req.files) {
+      console.log(req.files[i].path, 333);
       arrImg.push(req.files[i].path);
     }
   }
   let newImg = [];
   let times = Date.now();
-  arrImg.forEach((item, i) => {
-    const fileContent = fs.readFileSync(item);
-    const extension = path.extname(item); // 获取上传文件的后缀名
-    const newFileName = `${times}${i}${extension}`; // 根据时间和后缀名生成新的文件名
-    const uploadPath = path.join(__dirname, "../static/mySpace", newFileName);
-    fs.writeFileSync(uploadPath, fileContent); //把文件放入到我们想要的文件夹下
-    let img = `${mainUrl}/static/mySpace/${times}${i}${extension}`; //main.js里面把这个文件夹资源开放了，方便以往前端以网络图片形式访问
-    newImg.push(img);
-  });
+//   console.log(typeof(req.files.file));
+// console.log(typeof(req.files.file)=='undefined',100);
+  if (req.files.file?.type != 'text/html' || typeof(req.files.file)!='undefined') {
+    arrImg.forEach((item, i) => {
+      const fileContent = fs.readFileSync(item);
+      const extension = path.extname(item); // 获取上传文件的后缀名
+      const newFileName = `${times}${i}${extension}`; // 根据时间和后缀名生成新的文件名
+      const uploadPath = path.join(__dirname, "../static/mySpace", newFileName);
+      fs.writeFileSync(uploadPath, fileContent); //把文件放入到我们想要的文件夹下
+      let img = `${mainUrl}/static/mySpace/${times}${i}${extension}`; //main.js里面把这个文件夹资源开放了，方便以往前端以网络图片形式访问
+      newImg.push(img);
+    });
+  }
+
+
   let newObj = {
     ...req.body,
     content: {
@@ -150,7 +160,7 @@ router.get("/getMySpaceInfo", async (req, res) => {
                       }
                     })
                   }
-                  item.dataValues.replyList.push({...val.dataValues});
+                  item.dataValues.replyList.push({ ...val.dataValues });
                 }
 
               }
@@ -187,7 +197,7 @@ router.get("/getMySpaceInfo", async (req, res) => {
                     }
                   });
                   if (threeResult != null) {
-               
+
                     val.dataValues.replyName = threeResult.dataValues.friendName;
                   }
                   if (val.dataValues.replyId == req.query.id) {
@@ -197,7 +207,7 @@ router.get("/getMySpaceInfo", async (req, res) => {
                       }
                     })
                   }
-                  item.dataValues.replyList.push({...val.dataValues});
+                  item.dataValues.replyList.push({ ...val.dataValues });
                 }
 
               }

@@ -299,6 +299,11 @@ router.delete("/deleteSpace", async (req, res) => {
       likeId: req.body.id,
     }
   })
+  commentFormModel.destroy({
+    where:{
+      spaceId:req.body.id
+    }
+  })
   mySpaceModel
     .destroy({
       where: { id: req.body.id },

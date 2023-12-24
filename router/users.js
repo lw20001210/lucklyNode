@@ -260,4 +260,12 @@ router.get('/searchAllUser', async (req, res) => {
   })
 })
 
+router.post('/sendMessage', async (req, res) => {
+   console.log(req.body,222);
+   res.send({
+    code:200,
+    data:"我是返回值"
+   })
+})
+
 module.exports = router;
