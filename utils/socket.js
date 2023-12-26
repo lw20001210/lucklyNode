@@ -18,7 +18,7 @@ const createImgMsg = (obj) => {
         let time = Date.now();
         let path = `static/chat/${time}.png`;
         let fullPath;
-        const base64 = obj.message.img.replace(/^data:image\/\w+;base64,/, "");
+        const base64 = obj.message.replace(/^data:image\/\w+;base64,/, "");
         const dataBuffer = Buffer.from(base64, 'base64');
         
         fs.writeFile(path, dataBuffer, function (err, doc) {
@@ -27,7 +27,7 @@ const createImgMsg = (obj) => {
             } else {
                 fullPath = `${config.mainUrl}/${path}`;
                 console.log("保存成功");
-                obj.message.img = fullPath;
+                obj.message= fullPath;
                 data = obj;
                 createTextMsg(obj).then(() => {
                     resolve(data);
@@ -38,7 +38,33 @@ const createImgMsg = (obj) => {
         });
     });
 }
-
+// 处理语音文件
+const createAudio = (obj) => {
+    return new Promise((resolve, reject) => {
+        let data = {};
+        let time = Date.now();
+        let path = `static/audio/${time}.mp3`;
+        let fullPath;
+        const base64 = obj.message.replace(/^data:image\/\w+;base64,/, "");
+        const dataBuffer = Buffer.from(base64, 'base64');//把base64码转成buffer对象，
+        
+        fs.writeFile(path, dataBuffer, function (err, doc) {
+            if (err) {
+                reject(err);
+            } else {
+                fullPath = `${config.mainUrl}/${path}`;
+                console.log("保存成功");
+                obj.message= fullPath;
+                data = obj;
+                createTextMsg(obj).then(() => {
+                    resolve(data);
+                }).catch((error) => {
+                    reject(error);
+                });
+            }
+        });
+    });
+}
 // 获取聊天列表
 const getMsgList = async (obj) => {
     await privateChatModel.update({ status: 1 }, {
@@ -65,4 +91,4 @@ const getMsgList = async (obj) => {
     }
 }
 
-module.exports = { createTextMsg, createImgMsg, getMsgList }
+module.exports = { createTextMsg, createImgMsg,createAudio, getMsgList }

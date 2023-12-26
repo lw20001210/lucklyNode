@@ -19,6 +19,16 @@ const privateChatModel = sequelize.define(
         message: {
             type: Sequelize.JSON,
         },
+        audioTime: {//语音时长
+            type: Sequelize.INTEGER,
+            allowNull:true,
+            defaultValue: 0
+        },
+        type: {
+            type: Sequelize.INTEGER,
+            allowNull: false,
+            defaultValue: 0//0为文本，1为图片，2为语音，3为位置
+        },
         status: {
             type: Sequelize.INTEGER,
             allowNull: false,
