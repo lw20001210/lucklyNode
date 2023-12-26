@@ -64,7 +64,7 @@ app.use("/user", editSpaceRoute);
 app.use("/user", friendRoute);
 
 // 引入封装好的socket方法
-const { createTextMsg, createImgMsg,createAudio, getMsgList } = require("./utils/socket.js");
+const { createTextMsg, createImgMsg, createAudio, getMsgList } = require("./utils/socket.js");
 
 // socket.io连接
 let userList = [];//存储登录人员
@@ -97,23 +97,42 @@ io.on('connection', (socket) => {
   socket.on('chat', (data) => {
     createTextMsg(data);
     const userInfo = userList.find(user => user.uid === data.toUid);
-    socket.to(userInfo.socketId).emit('msgNotice', data);//推送给好友那边
+    if (typeof userInfo != 'undefined') {
+      socket.to(userInfo.socketId).emit('msgNotice', data);//推送给好友那边
+    }
   });
   // 处理发送图片
   socket.on('getChatImg', async (data) => {
     let newData = await createImgMsg(data)
     data = newData;
     //await socket.emit('chatImg', data)
+    // const userInfo = userList.find(user => user.uid === data.toUid);
+    // socket.to(userInfo.socketId).emit('msgNotice', data);//推送给好友那边
     const userInfo = userList.find(user => user.uid === data.toUid);
-    socket.to(userInfo.socketId).emit('msgNotice', data);//推送给好友那边
+    if (typeof userInfo != 'undefined') {
+      socket.to(userInfo.socketId).emit('msgNotice', data);//推送给好友那边
+    }
   })
   // 处理语音消息
-  socket.on('getChatVoice',async data=>{
+  socket.on('getChatVoice', async data => {
     let newData = await createAudio(data)
     data = newData;
+    // const userInfo = userList.find(user => user.uid === data.toUid);
+    // socket.to(userInfo.socketId).emit('msgNotice', data);//推送给好友那边
     const userInfo = userList.find(user => user.uid === data.toUid);
-    socket.to(userInfo.socketId).emit('msgNotice', data);//推送给好友那边
-  }) 
+    // 如果不在线，那么就只存数据库，不直接推送
+    if (typeof userInfo != 'undefined') {
+      socket.to(userInfo.socketId).emit('msgNotice', data);//推送给好友那边
+    }
+  })
+  // 处理位置消息
+  socket.on('getLocal', data => {
+    createTextMsg(data);
+    const userInfo = userList.find(user => user.uid === data.toUid);
+    if (typeof userInfo != 'undefined') {
+      socket.to(userInfo.socketId).emit('msgNotice', data);//推送给好友那边
+    }
+  })
   // 获取聊天列表数据
   socket.on('getMsgList', (obj) => {
     getMsgList(obj).then(data => {

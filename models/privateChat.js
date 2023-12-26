@@ -34,6 +34,18 @@ const privateChatModel = sequelize.define(
             allowNull: false,
             defaultValue: 0//未读,已读,-1已删除
         },
+        latitude: {//纬度
+            type: Sequelize.STRING(100),
+            allowNull:true,
+        },
+        longitude: {//经度
+            type: Sequelize.STRING(100),
+            allowNull:true,
+        },
+        address: {//地址
+            type: Sequelize.JSON,
+            allowNull:true,
+        },
         createTime: {
             type: Sequelize.STRING(100),
             defaultValue: Date.now(),
