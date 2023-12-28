@@ -1,6 +1,9 @@
 const express = require("express");
+const { Op } = require('sequelize');
 const { applyListModel, friendShipModel } = require("../models/friendShip");
 const UsersModel = require("../models/usersModel.js");
+const mySpaceModel = require("../models/mySpace");
+const privateChatModel = require("../models/privateChat");
 // 2.创建路由对象
 const router = express.Router();
 // 发送申请
@@ -163,6 +166,32 @@ router.get("/getFriendList", async (req, res) => {
         data: friendList
     })
 })
+// 获取朋友列表最新消息的状态
+router.get("/getFriendStatus", async (req, res) => {
+    let datas = await privateChatModel.findAll({
+        where: {
+            [Op.or]: [
+                { fromUid: req.query.id},
+                { toUid: req.query.id }
+            ]
+        }
+    })
+    // console.log(datas,1111);
+    let total = await privateChatModel.findAll({
+        where: {
+            toUid:req.query.id,
+            status:0
+        }
+    })
+    console.log(total,2222);
+    return res.send({
+        code: 200,
+        data:{
+            datas,
+            total
+        }
+    })
+})
 router.get("/getFriendInfo", async (req, res) => {
     //console.log(req.query);
     let userInfo = await UsersModel.findOne({
@@ -231,22 +260,43 @@ router.put("/updateFriendName", async (req, res) => {
     })
 })
 router.delete("/removeFriend", async (req, res) => {
-   let data= await friendShipModel.destroy({
+    //    let data= await friendShipModel.destroy({
+    //         where: {
+    //             myId: req.body.myId,
+    //             friendId: req.body.friendId
+    //         }
+    //       });
+    //       console.log(data,11);
+    //       if(data==0){
+    //         let result= await friendShipModel.destroy({
+    //             where: {
+    //                 myId: req.body.friendId,
+    //                 friendId: req.body.myId
+    //             }
+    //           });
+    //           console.log(result,22);
+    //       }
+    await friendShipModel.destroy({
         where: {
-            myId: req.body.myId,
-            friendId: req.body.friendId
+            [Op.or]: [
+                { myId: req.body.myId, friendId: req.body.friendId },
+                { myId: req.body.friendId, friendId: req.body.myId },
+            ]
         }
-      });
-      console.log(data,11);
-      if(data==0){
-        let result= await friendShipModel.destroy({
-            where: {
-                myId: req.body.friendId,
-                friendId: req.body.myId
-            }
-          });
-          console.log(result,22);
-      }
+    });
+    await mySpaceModel.destroy({
+        where: {
+            uid: req.body.myId
+        }
+    });
+    await privateChatModel.destroy({
+        where: {
+            [Op.or]: [
+                { fromUid: req.body.myId, toUid: req.body.friendId },
+                { fromUid: req.body.friendId, toUid: req.body.myId }
+            ]
+        }
+    });
     return res.send({
         code: 200,
         msg: "删除好友成功"

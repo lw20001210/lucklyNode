@@ -25,6 +25,7 @@
     "moment": "^2.29.4",
     "mysql": "^2.18.1",
     "mysql2": "^3.3.0",
+    "node-media-server": "^2.6.2",
     "qrcode": "^1.5.3",
     "sequelize": "^6.31.1",
     "socket.io": "^4.7.2"

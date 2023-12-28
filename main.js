@@ -43,7 +43,7 @@ app.use((err, req, res, next) => {
   }
 
 });
-
+require('./utils/videoCall.js')
 // 导入 Sequelize连接数据库 和模型定义
 const sequelize = require("./mysql/sequlize");
 const UserModel = require("./models/usersModel.js");

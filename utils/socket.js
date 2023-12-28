@@ -69,17 +69,18 @@ const createAudio = (obj) => {
 const getMsgList = async (obj) => {
     await privateChatModel.update({ status: 1 }, {
         where: {
-            [Op.or]: [
-                { fromUid: obj.fromUid, toUid: obj.toUid },
-                { fromUid: obj.toUid, toUid: obj.fromUid }
-            ]
+            fromUid: obj.toUid, toUid: obj.fromUid
+            // [Op.or]: [
+            //     { fromUid: obj.fromUid, toUid: obj.toUid },
+            //     { fromUid: obj.toUid, toUid: obj.fromUid }
+            // ]
         }
     });
     let data = await privateChatModel.findAll({
         where: {
             [Op.or]: [
-                { fromUid: obj.fromUid, toUid: obj.toUid, status: 1 },
-                { fromUid: obj.toUid, toUid: obj.fromUid, status: 1 },
+                { fromUid: obj.fromUid, toUid: obj.toUid},
+                { fromUid: obj.toUid, toUid: obj.fromUid },
             ]
         }
     })
