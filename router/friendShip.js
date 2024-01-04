@@ -176,14 +176,12 @@ router.get("/getFriendStatus", async (req, res) => {
             ]
         }
     })
-    // console.log(datas,1111);
     let total = await privateChatModel.findAll({
         where: {
             toUid:req.query.id,
             status:0
         }
     })
-    console.log(total,2222);
     return res.send({
         code: 200,
         data:{
@@ -260,22 +258,6 @@ router.put("/updateFriendName", async (req, res) => {
     })
 })
 router.delete("/removeFriend", async (req, res) => {
-    //    let data= await friendShipModel.destroy({
-    //         where: {
-    //             myId: req.body.myId,
-    //             friendId: req.body.friendId
-    //         }
-    //       });
-    //       console.log(data,11);
-    //       if(data==0){
-    //         let result= await friendShipModel.destroy({
-    //             where: {
-    //                 myId: req.body.friendId,
-    //                 friendId: req.body.myId
-    //             }
-    //           });
-    //           console.log(result,22);
-    //       }
     await friendShipModel.destroy({
         where: {
             [Op.or]: [

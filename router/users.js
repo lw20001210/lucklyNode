@@ -1,7 +1,11 @@
 const express = require("express");
 const moment = require("moment");
-// const db = require("../mysql/userSql");
+const { Op } = require('sequelize');
 const UsersModel = require("../models/usersModel.js");
+const { friendShipModel, applyListModel } = require("../models/friendShip");
+const mySpaceModel = require("../models/mySpace");
+const { likeFormModel, commentFormModel, replyFormModel } = require("../models/editSpace");
+const privateChatModel = require("../models/privateChat");
 const fs = require("fs");
 const path = require("path");
 const { mainUrl } = require("../config");
@@ -17,6 +21,7 @@ const jwt = require("jsonwebtoken");
 // 解决form-data参数问题
 var multipart = require("connect-multiparty");
 let config = require("../config");
+const { groupSchemaModel, groupUserSchemaModel, groupMsgSchemaModel } = require("../models/groups.js");
 // 2.创建路由对象
 const router = express.Router();
 // 注册接口
@@ -33,9 +38,9 @@ router.post("/register", multipart(), async (req, res) => {
     signature,
     status,
   } = req.body;
-  console.log(req.files);
+  //console.log(req.files);
   let imgObj = req.files.avatar.path;
-  console.log(imgObj);
+  //console.log(imgObj);
   if (!imgObj)
     return res.send({
       code: 500,
@@ -53,7 +58,8 @@ router.post("/register", multipart(), async (req, res) => {
     ...req.body,
     password: password,
     avatar: img,
-    createTime: moment(Date.now()).format("YYYY/MM/DD HH:mm"),
+    createTime: Date.now()
+    // createTime: moment(Date.now()).format("YYYY/MM/DD HH:mm"),
   };
   let userRes = await UsersModel.findOne({
     where: {
@@ -160,6 +166,66 @@ router.get("/userInfo", async (req, res) => {
 // 注销账号
 router.delete("/delete", (req, res) => {
   console.log("删除接口", req.body);
+  applyListModel.destroy({
+    where: {
+      [Op.or]: [
+        { sendId: req.body.id },
+        { acceptId: req.body.id }
+      ]
+    }
+  })
+  commentFormModel.destroy({
+    where: {
+      commentId: req.body.id
+    }
+  })
+  friendShipModel.destroy({
+    where: {
+      [Op.or]: [
+        { myId: req.body.id },
+        { friendId: req.body.id }
+      ]
+    }
+  })
+  groupSchemaModel.destroy({
+    where: {
+      adminId: req.body.id
+    }
+  })
+  groupUserSchemaModel.destroy({
+    where: {
+      uid: req.body.id
+    }
+  })
+  groupMsgSchemaModel.destroy({
+    where: {
+      fromUid: req.body.id
+    }
+  })
+  likeFormModel.destroy({
+    where: {
+      likeId: req.body.id
+    }
+  })
+  mySpaceModel.destroy({
+    where: {
+      uid: req.body.id
+    }
+  })
+
+  privateChatModel.destroy({
+    where: {
+      [Op.or]: [
+        { fromUid: req.body.id },
+        { toUid: req.body.id }
+      ]
+    }
+  })
+  replyFormModel.destroy({
+    where: {
+      replyId: req.body.id
+    }
+  })
   UsersModel.destroy({
     where: { id: req.body.id },
   })
@@ -260,12 +326,5 @@ router.get('/searchAllUser', async (req, res) => {
   })
 })
 
-router.post('/sendMessage', async (req, res) => {
-   console.log(req.body,222);
-   res.send({
-    code:200,
-    data:"我是返回值"
-   })
-})
 
 module.exports = router;
