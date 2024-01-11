@@ -2,6 +2,7 @@ const express = require("express");
 // 2.创建路由对象
 const router = express.Router();
 const fs = require("fs");
+const { Op } = require("sequelize");
 const UsersModel = require("../models/usersModel.js");
 var multipart = require("connect-multiparty");
 const mySpaceModel = require("../models/mySpace");
@@ -22,9 +23,9 @@ router.post("/sedSpace", multipart(), async (req, res) => {
   }
   let newImg = [];
   let times = Date.now();
-//   console.log(typeof(req.files.file));
-// console.log(typeof(req.files.file)=='undefined',100);
-  if (req.files.file?.type != 'text/html' || typeof(req.files.file)!='undefined') {
+  //   console.log(typeof(req.files.file));
+  // console.log(typeof(req.files.file)=='undefined',100);
+  if (req.files.file?.type != 'text/html' || typeof (req.files.file) != 'undefined') {
     arrImg.forEach((item, i) => {
       const fileContent = fs.readFileSync(item);
       const extension = path.extname(item); // 获取上传文件的后缀名
@@ -179,6 +180,7 @@ router.get("/getMySpaceInfo", async (req, res) => {
             // 给予回复评论备注名
             for (const val of replys) {
               val.dataValues.replyName = '';
+              val.dataValues.remarked = ''
               if (item.dataValues.spaceId == val.dataValues.spaceId) {
                 if (item.dataValues.id == val.dataValues.commentId) {
                   let threeData = await friendShipModel.findOne({
@@ -187,20 +189,35 @@ router.get("/getMySpaceInfo", async (req, res) => {
                       friendId: req.query.id
                     }
                   });
-                  if (threeData != null) {
-                    val.dataValues.replyName = threeData.dataValues.nameD;
-                  }
                   let threeResult = await friendShipModel.findOne({
                     where: {
                       myId: req.query.id,
                       friendId: val.dataValues.replyId,
                     }
                   });
-                  if (threeResult != null) {
-
+                  if (threeData != null) {
+                    val.dataValues.remarked = threeData.dataValues.friendName;
+                    val.dataValues.replyName = threeData.dataValues.nameD;
+                  } else if (threeResult != null) {
+                    val.dataValues.remarked = threeResult.dataValues.nameD;
                     val.dataValues.replyName = threeResult.dataValues.friendName;
-                  }
-                  if (val.dataValues.replyId == req.query.id) {
+                  } else {
+                    let friend = await friendShipModel.findOne({
+                      where: {
+                        [Op.or]: [
+                          { myId: val.dataValues.commentUid, friendId: req.query.id },
+                          {
+                            myId: req.query.id,
+                            friendId: val.dataValues.commentUid
+                          }
+                        ]
+                      }
+                    });
+                    if(friend.dataValues.friendId==req.query.id){
+                        val.dataValues.remarked=friend.dataValues.nameD
+                    }else{
+                      val.dataValues.remarked=friend.dataValues.friendName
+                    }
                     userList.forEach(userItem => {
                       if (userItem.dataValues.id == val.dataValues.replyId) {
                         val.dataValues.replyName = userItem.dataValues.nickname;

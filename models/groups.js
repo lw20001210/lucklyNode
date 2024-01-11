@@ -27,6 +27,7 @@ const groupSchemaModel = sequelize.define("groupSchema", {
     },
     createTime: {
         type: Sequelize.STRING(100),
+        allowNull: false,
         defaultValue: Date.now(),
     },
 },
@@ -60,6 +61,7 @@ const groupUserSchemaModel = sequelize.define("groupUserSchema", {
     },
     createTime: {
         type: Sequelize.STRING(100),
+        allowNull: false,
         defaultValue: Date.now(),
     },
 },
@@ -107,6 +109,7 @@ const groupMsgSchemaModel = sequelize.define(
         },
         createTime: {
             type: Sequelize.STRING(100),
+            allowNull: false,
             defaultValue: Date.now(),
         },
     },

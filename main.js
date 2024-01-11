@@ -52,7 +52,7 @@ app.use((err, req, res, next) => {
 
 });
 // 视频通话
-require('./utils/videoCall.js')
+// require('./utils/videoCall.js')
 
 // 导入 Sequelize连接数据库 和模型定义
 const sequelize = require("./mysql/sequlize");
@@ -75,13 +75,15 @@ app.use("/user", mySpaceRoute);
 app.use("/user", editSpaceRoute);
 app.use("/user", friendRoute);
 app.use("/user", groupRoute)
+
+
+
 // 引入封装好的socket方法
 const { createTextMsg, createImgMsg, createAudio, getMsgList } = require("./utils/socket.js");
-const { emit } = require("process");
-
 // socket.io连接
 let userList = [];//存储登录人员
-let group = {}//群聊界面
+let group = {}//群聊房间
+let chatRoom = {}//私聊房间
 io.on('connection', (socket) => {
   // 1.处理离线在线
   const uid = socket.handshake.query.id;
@@ -107,7 +109,28 @@ io.on('connection', (socket) => {
   /**
    * 私聊功能
    */
+  // 用户进入私聊房间
+  socket.on('joinChatRoom', ({ id, friendId }) => {
+    if (!chatRoom[id]) {
+      chatRoom[id] = []
+      chatRoom[id].push(friendId)
+      console.log(chatRoom,1);
+    } else {
+      if (!chatRoom[id].includes(friendId)) {
+        chatRoom[id].push(friendId)
+      }
+      console.log(chatRoom,2);
+    }
+   
+  })
 
+  // 用户离开私聊房间
+  socket.on('leaveChatRoom', ({id}) => {
+    if (chatRoom.hasOwnProperty(id)) {
+      delete chatRoom[id]
+    }
+    console.log(chatRoom,3);
+  })
   // 获取私人聊天列表数据
   socket.on('getMsgList', (obj) => {
     getMsgList(obj).then(data => {
@@ -116,7 +139,17 @@ io.on('connection', (socket) => {
   })
   //发送文字消息
   socket.on('chat', (data) => {
-    createTextMsg(data);
+    let users = chatRoom[data.toUid];
+    console.log(users,666);
+    if (users) {
+      console.log('已读');
+      data.status = 1;
+      createTextMsg(data)
+    } else {
+      console.log("未读");
+      createTextMsg(data);
+    }
+
     const userInfo = userList.find(user => user.uid === data.toUid);
     if (typeof userInfo != 'undefined') {//判断好友是否在线
       // socket.emit('msgNotice', data);//一定要to,不然那边无法实时接收
@@ -126,11 +159,23 @@ io.on('connection', (socket) => {
   });
   // 处理发送图片
   socket.on('getChatImg', async (data) => {
+    let users = chatRoom[data.toUid];
+    console.log(users);
+    if (users) {
+      data.status = 1;
+      createTextMsg(data)
+    } else {
+      createTextMsg(data);
+    }
     let newData = await createImgMsg(data)
     data = newData;
-    //await socket.emit('chatImg', data)
-    // const userInfo = userList.find(user => user.uid === data.toUid);
-    // socket.to(userInfo.socketId).emit('msgNotice', data);//推送给好友那边
+    /**
+     * 
+     await socket.emit('chatImg', data)
+     const userInfo = userList.find(user => user.uid === data.toUid);
+     socket.to(userInfo.socketId).emit('msgNotice', data);//推送给好友那边
+     */
+ 
     const userInfo = userList.find(user => user.uid === data.toUid);
     if (typeof userInfo != 'undefined') {//判断好友是否在线
       socket.to(userInfo.socketId).emit('msgNotice', data);//推送给好友那边
@@ -138,6 +183,13 @@ io.on('connection', (socket) => {
   })
   // 处理语音消息
   socket.on('getChatVoice', async data => {
+    let users = chatRoom[data.toUid];
+    if (users) {
+      data.status = 1;
+      createTextMsg(data)
+    } else {
+      createTextMsg(data);
+    }
     let newData = await createAudio(data)
     data = newData;
     socket.emit('audio', data)
@@ -151,7 +203,13 @@ io.on('connection', (socket) => {
   })
   // 处理位置消息
   socket.on('getLocal', data => {
-    createTextMsg(data);
+    let users = chatRoom[data.toUid];
+    if (users) {
+      data.status = 1;
+      createTextMsg(data)
+    } else {
+      createTextMsg(data);
+    }
     const userInfo = userList.find(user => user.uid === data.toUid);
     if (typeof userInfo != 'undefined') {
       socket.to(userInfo.socketId).emit('msgNotice', data);//推送给好友那边
@@ -177,7 +235,6 @@ io.on('connection', (socket) => {
       if (!group[data.groupId].includes(data.id)) {
         group[data.groupId].push(data.id)
       }
-
     }
     console.log('进入群聊', group)
   })
@@ -192,7 +249,7 @@ io.on('connection', (socket) => {
       data = newData;
       socket.emit('audio', data)
     } else {
-      createTextMsg(data,true);
+      createTextMsg(data, true);
     }
 
     io.in(data.groupId).emit('listToGroupMsg', data);

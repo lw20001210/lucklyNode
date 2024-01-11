@@ -46,6 +46,7 @@ const UsersModel = sequelize.define(
     },
     createTime: {
       type: Sequelize.STRING(100),
+      allowNull: false,
       defaultValue: Date.now(),
     },
     signature: {

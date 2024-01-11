@@ -36,6 +36,7 @@ const applyListModel = sequelize.define("applyList", {
     },
     createTime: {
         type: Sequelize.STRING(100),
+        allowNull: false,
         defaultValue: Date.now(),
     },
 },
@@ -63,6 +64,7 @@ const friendShipModel = sequelize.define("friendShip", {
     },
     createTime: {
         type: Sequelize.STRING(100),
+        allowNull: false,
         defaultValue: Date.now(),
     },
 },

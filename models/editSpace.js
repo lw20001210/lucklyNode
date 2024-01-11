@@ -23,6 +23,7 @@ const likeFormModel = sequelize.define(
     // },
     createTime: {
       type: Sequelize.STRING(100),
+      allowNull: false,
       defaultValue: Date.now(),
     },
   },
@@ -37,9 +38,6 @@ const commentFormModel = sequelize.define(
       primaryKey: true, //主键
       autoIncrement: true, //自动递增
     },
-    // uid: {
-    //   type: Sequelize.INTEGER, //用户id
-    // },
     commentId: {
       type: Sequelize.INTEGER, //评论者id
     },
@@ -51,6 +49,7 @@ const commentFormModel = sequelize.define(
     },
     createTime: {
       type: Sequelize.STRING(100),
+      allowNull: false,
       defaultValue: Date.now(),
     },
   },
@@ -82,6 +81,7 @@ const replyFormModel = sequelize.define(
     },
     createTime: {
       type: Sequelize.STRING(100),
+      allowNull: false,
       defaultValue: Date.now(),
     },
   },

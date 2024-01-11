@@ -39,7 +39,6 @@ router.post("/updateLike", async (req, res) => {
         uid: userInfo.uid, //用户id
       }
     });
-    console.log(data, 112424);
     res.send({
       msg: "取消点赞",
       code: 200,
@@ -78,6 +77,7 @@ router.get("/getFriendDynamicList", async (req, res) => {
   })
   // 所有好友的对应动态
   let spaceList = [];
+  // 排除自己
   let spaces = await mySpaceModel.findAll({
     where: {
       uid: {
@@ -149,7 +149,7 @@ router.get("/getFriendDynamicList", async (req, res) => {
       ele.dataValues.comments = [];
       for (const item of comments) {
         item.dataValues.replyList = [];
-         // 给动态正常评论备注名
+        // 给动态正常评论备注名
         if (ele.dataValues.id == item.dataValues.spaceId) {
           let data = await friendShipModel.findOne({
             where: {
@@ -157,10 +157,16 @@ router.get("/getFriendDynamicList", async (req, res) => {
               friendId: req.query.id
             }
           });
-
+          let result = await friendShipModel.findOne({
+            where: {
+              myId: req.query.id,
+              friendId: item.dataValues.commentId
+            }
+          });
           if (data != null) {
             item.dataValues.remarked = data.dataValues.nameD;
             // 给予回复评论备注名
+            console.log(replys, 9999);
             for (const val of replys) {
               val.dataValues.replyName = '';
               if (item.dataValues.spaceId == val.dataValues.spaceId) {
@@ -197,14 +203,8 @@ router.get("/getFriendDynamicList", async (req, res) => {
             }
             ele.dataValues.comments.push(item);
           }
-          let result = await friendShipModel.findOne({
-            where: {
-              myId: req.query.id,
-              friendId: item.dataValues.commentId
-            }
-          });
 
-          if (result != null) {
+          else if (result != null) {
             item.dataValues.remarked = result.dataValues.friendName;
             // 给予回复评论备注名
             for (const val of replys) {
@@ -244,15 +244,68 @@ router.get("/getFriendDynamicList", async (req, res) => {
             }
             ele.dataValues.comments.push(item);
           }
-          // console.log(ele.dataValues.comments.length,99);
-          if (item.dataValues.commentId == req.query.id) {
-            userList.forEach(userItem => {
-              if (userItem.dataValues.id == req.query.id) {
-                item.dataValues.remarked = userItem.dataValues.nickname;
-                ele.dataValues.comments.push(item);
+          else {
+            if (item.dataValues.commentId == req.query.id) {
+              userList.forEach(userItem => {
+                if (userItem.dataValues.id == req.query.id) {
+                  item.dataValues.remarked = userItem.dataValues.nickname;
+                }
+              })
+              // 给予回复评论备注名
+              for (const val of replys) {
+                val.dataValues.replyName = '';
+                val.dataValues.remarked=''
+                if (item.dataValues.spaceId == val.dataValues.spaceId) {
+                  if (item.dataValues.id == val.dataValues.commentId) {
+                    let twoData = await friendShipModel.findOne({
+                      where: {
+                        myId: val.dataValues.replyId,
+                        friendId: req.query.id
+                      }
+                    });
+                    let twoResult = await friendShipModel.findOne({
+                      where: {
+                        myId: req.query.id,
+                        friendId: val.dataValues.replyId,
+                      }
+                    });
+                    if (twoData != null) {
+                      val.dataValues.remarked = twoData.dataValues.friendName;
+                      val.dataValues.replyName = twoData.dataValues.nameD;
+                    } else if (twoResult != null) {
+                      val.dataValues.remarked = twoResult.dataValues.nameD;
+                      val.dataValues.replyName = twoResult.dataValues.friendName;
+                    }
+                    else{
+                      let friend = await friendShipModel.findOne({
+                        where: {
+                          [Op.or]: [
+                            { myId: val.dataValues.commentUid, friendId: req.query.id },
+                            {
+                              myId: req.query.id,
+                              friendId: val.dataValues.commentUid
+                            }
+                          ]
+                        }
+                      });
+                      if(friend.dataValues.friendId==req.query.id){
+                          val.dataValues.remarked=friend.dataValues.nameD
+                      }else{
+                        val.dataValues.remarked=friend.dataValues.friendName
+                      }
+                      userList.forEach(userItem => {
+                        if (userItem.dataValues.id == val.dataValues.replyId) {
+                          val.dataValues.replyName = userItem.dataValues.nickname;
+                        }
+                      })
+                    }
+                    item.dataValues.replyList.push({ ...val.dataValues });
+                  }
+
+                }
               }
-            })
-            // ele.dataValues.comments.push(item);
+              ele.dataValues.comments.push(item);
+            }
           }
         }
       }
@@ -300,8 +353,8 @@ router.delete("/deleteSpace", async (req, res) => {
     }
   })
   commentFormModel.destroy({
-    where:{
-      spaceId:req.body.id
+    where: {
+      spaceId: req.body.id
     }
   })
   mySpaceModel

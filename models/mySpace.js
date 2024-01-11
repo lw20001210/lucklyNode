@@ -24,9 +24,10 @@ const mySpacesModel = sequelize.define(
     status: {
       type: Sequelize.TINYINT,
       allowNull: true,
-    },
+    },//动态权限
     createTime: {
       type: Sequelize.STRING(100),
+      allowNull: false,
       defaultValue: Date.now(),
     },
   },
