@@ -114,22 +114,22 @@ io.on('connection', (socket) => {
     if (!chatRoom[id]) {
       chatRoom[id] = []
       chatRoom[id].push(friendId)
-      console.log(chatRoom,1);
+      console.log(chatRoom, 1);
     } else {
       if (!chatRoom[id].includes(friendId)) {
         chatRoom[id].push(friendId)
       }
-      console.log(chatRoom,2);
+      console.log(chatRoom, 2);
     }
-   
+
   })
 
   // 用户离开私聊房间
-  socket.on('leaveChatRoom', ({id}) => {
+  socket.on('leaveChatRoom', ({ id }) => {
     if (chatRoom.hasOwnProperty(id)) {
       delete chatRoom[id]
     }
-    console.log(chatRoom,3);
+    console.log(chatRoom, 3);
   })
   // 获取私人聊天列表数据
   socket.on('getMsgList', (obj) => {
@@ -140,7 +140,7 @@ io.on('connection', (socket) => {
   //发送文字消息
   socket.on('chat', (data) => {
     let users = chatRoom[data.toUid];
-    console.log(users,666);
+    console.log(users, 666);
     if (users) {
       console.log('已读');
       data.status = 1;
@@ -163,9 +163,6 @@ io.on('connection', (socket) => {
     console.log(users);
     if (users) {
       data.status = 1;
-      createTextMsg(data)
-    } else {
-      createTextMsg(data);
     }
     let newData = await createImgMsg(data)
     data = newData;
@@ -175,7 +172,7 @@ io.on('connection', (socket) => {
      const userInfo = userList.find(user => user.uid === data.toUid);
      socket.to(userInfo.socketId).emit('msgNotice', data);//推送给好友那边
      */
- 
+
     const userInfo = userList.find(user => user.uid === data.toUid);
     if (typeof userInfo != 'undefined') {//判断好友是否在线
       socket.to(userInfo.socketId).emit('msgNotice', data);//推送给好友那边
@@ -186,9 +183,6 @@ io.on('connection', (socket) => {
     let users = chatRoom[data.toUid];
     if (users) {
       data.status = 1;
-      createTextMsg(data)
-    } else {
-      createTextMsg(data);
     }
     let newData = await createAudio(data)
     data = newData;
@@ -206,9 +200,6 @@ io.on('connection', (socket) => {
     let users = chatRoom[data.toUid];
     if (users) {
       data.status = 1;
-      createTextMsg(data)
-    } else {
-      createTextMsg(data);
     }
     const userInfo = userList.find(user => user.uid === data.toUid);
     if (typeof userInfo != 'undefined') {

@@ -39,7 +39,7 @@ router.post("/register", multipart(), async (req, res) => {
     status,
   } = req.body;
   //console.log(req.files);
-  let imgObj = req.files.avatar.path;
+  let imgObj = req.files.avatar?.path;
   //console.log(imgObj);
   if (!imgObj)
     return res.send({
