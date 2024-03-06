@@ -4,7 +4,7 @@ const bodyParser = require("body-parser");// 引入 cookie-parser 中间件
 const cors = require("cors"); //跨域
 const config = require("./config");
 const expressJWT = require("express-jwt"); //一定要在路由之前配置
-
+const pathGlobal = require("path")
 // socket.io
 const http = require('http').createServer(app);
 const io = require('socket.io')(http);
@@ -16,14 +16,13 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // 静态资源,方便我们前端以往网络图片形式访问
-app.use("/static/avatar", express.static("static/avatar"));
-app.use("/static/mySpace", express.static("static/mySpace"));
-app.use("/static/avatar", express.static("static/avatar"));
-app.use("/static/chat", express.static("static/chat"));
-app.use("/static/audio", express.static("static/audio"));
-app.use("/static/groupAvatar", express.static("static/groupAvatar"));
-app.use("/static/groupImg", express.static("static/groupImg"));
-app.use("/static/groupAudio", express.static("static/groupAudio"));
+app.use("/static/avatar", express.static(pathGlobal.join(__dirname,"./static/avatar")));
+app.use("/static/mySpace", express.static(pathGlobal.join(__dirname,"./static/mySpace")));
+app.use("/static/chat", express.static(pathGlobal.join(__dirname,"./static/chat")));
+app.use("/static/audio", express.static(pathGlobal.join(__dirname,"./static/audio")));
+app.use("/static/groupAvatar", express.static(pathGlobal.join(__dirname,"./static/groupAvatar")));
+app.use("/static/groupImg", express.static(pathGlobal.join(__dirname,"./static/groupImg")));
+app.use("/static/groupAudio", express.static(pathGlobal.join(__dirname,"./static/groupAudio")));
 
 
 // 定义 token 的解析中间件，并排除 user/register和user/login 相关路由
@@ -80,6 +79,7 @@ app.use("/user", groupRoute)
 
 // 引入封装好的socket方法
 const { createTextMsg, createImgMsg, createAudio, getMsgList } = require("./utils/socket.js");
+const { path } = require("@hapi/joi/lib/errors.js");
 // socket.io连接
 let userList = [];//存储登录人员
 let group = {}//群聊房间
@@ -277,6 +277,9 @@ sequelize
     http.listen(3000, () => {
       console.log(`应用程序已启动，访问地址: ${config.mainUrl}`);
     });
+    // http.listen(8899, () => {
+    //   console.log(`应用程序已启动，访问地址: ${config.mainUrl}`);
+    // });
     // app.listen(3000, () => {//不能用app做端口了
     //   console.log(`应用程序已启动，访问地址: ${mainUrl}`);
     // });
