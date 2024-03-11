@@ -201,6 +201,7 @@ io.on('connection', (socket) => {
     if (users) {
       data.status = 1;
     }
+    createTextMsg(data)
     const userInfo = userList.find(user => user.uid === data.toUid);
     if (typeof userInfo != 'undefined') {
       socket.to(userInfo.socketId).emit('msgNotice', data);//推送给好友那边
@@ -277,9 +278,6 @@ sequelize
     http.listen(3000, () => {
       console.log(`应用程序已启动，访问地址: ${config.mainUrl}`);
     });
-    // http.listen(8899, () => {
-    //   console.log(`应用程序已启动，访问地址: ${config.mainUrl}`);
-    // });
     // app.listen(3000, () => {//不能用app做端口了
     //   console.log(`应用程序已启动，访问地址: ${mainUrl}`);
     // });
