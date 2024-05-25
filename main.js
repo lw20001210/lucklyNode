@@ -276,7 +276,7 @@ sequelize
   .then(() => {
     console.log("数据表同步成功。");
     http.listen(3000, () => {
-      console.log(`应用程序已启动，访问地址: ${config.mainUrl}`);
+      console.log(`应用程序已启动,访问地址: ${config.mainUrl}`);
     });
     // app.listen(3000, () => {//不能用app做端口了
     //   console.log(`应用程序已启动，访问地址: ${mainUrl}`);
