@@ -270,11 +270,11 @@ io.on('connection', (socket) => {
 sequelize
   .authenticate()
   .then(() => {
-    console.log("数据库连接成功。");
+    console.log("数据库连接成功");
     return sequelize.sync();
   })
   .then(() => {
-    console.log("数据表同步成功。");
+    console.log("数据表同步成功");
     http.listen(3000, () => {
       console.log(`应用程序已启动,访问地址: ${config.mainUrl}`);
     });
