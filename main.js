@@ -140,8 +140,7 @@ io.on('connection', (socket) => {
   //发送文字消息
   socket.on('chat', (data) => {
     let users = chatRoom[data.toUid];
-    console.log(users, 666);
-    if (users) {
+    if (users&&users.includes(data.fromUid)) {
       console.log('已读');
       data.status = 1;
       createTextMsg(data)
